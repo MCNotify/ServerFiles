@@ -9,7 +9,7 @@ if(isset($_COOKIE['server_secret_key'])){
 	$data["unauthorized"] = "true";
 	http_response_code(401);
 	echo json_encode($data);
-	exit;
+	exit();
 }
 
 if($_SERVER['REQUEST_METHOD'] === 'POST'){
@@ -17,16 +17,21 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
 	$input = file_get_contents("php://input");
 	$json = json_decode($input, true);
 	
-	$uuid = $json['uuid'];
-	$server_id = $json['server_id'];
-	$event_name = $json['event_name'];
-	$event_properties = $json['event_properties'];
+	if(isset($json['uuid']) && isset($json['server_id']) &&  isset($json['event_name']) &&  isset($json['event_properties'])){
+		$uuid = $json['uuid'];
+		$server_id = $json['server_id'];
+		$event_name = $json['event_name'];
+		$event_properties = $json['event_properties'];
+	} else {
+		http_response_code(400);
+		exit();
+	}
 	
 	if(!isServerValidated($conn, $server_id, $server_secret)){
 		$data["unauthorized"] = "true";
 		http_response_code(401);
 		echo json_encode($data);
-		exit;
+		exit();
 	}
 	
 	$id = getUserId($conn, $uuid, $server_id);
@@ -34,7 +39,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
 		$data["error"] = "User does not exist";
 		http_response_code(400);
 		echo json_encode($data);
-		exit;
+		exit();
 	}
 	
 	// Insert new subscription
@@ -45,20 +50,22 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
 	$stmt->execute();
 	$data["subscription_id"] = $stmt->insert_id;
 	echo json_encode($data);
-	exit;
+	exit();
 } else if ($_SERVER['REQUEST_METHOD'] === 'GET'){
 	
-	$input = file_get_contents("php://input");
-	$json = json_decode($input, true);
-	
-	$uuid = $json['uuid'];
-	$server_id = $json['server_id'];
+	if(isset($_GET['uuid']) && isset($_GET['server_id'])){
+		$uuid = $_GET['uuid'];
+		$server_id = $_GET['server_id'];
+	} else {
+		http_response_code(400);
+		exit();		
+	}
 	
 	if(!isServerValidated($conn, $server_id, $server_secret)){
 		$data["unauthorized"] = "true";
 		http_response_code(401);
 		echo json_encode($data);
-		exit;
+		exit();
 	}
 	
 	$id = getUserId($conn, $uuid, $server_id);
@@ -66,7 +73,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
 		$data["error"] = "User does not exist";
 		http_response_code(400);
 		echo json_encode($data);
-		exit;
+		exit();
 	}
 	
 	// Check that the server secret key matches the server id's secret key
@@ -91,20 +98,25 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
 	}
 	
 	echo json_encode($data);
-	exit;
+	exit();
 	
 } else if($_SERVER['REQUEST_METHOD'] === 'DELETE'){
 	$input = file_get_contents("php://input");
 	$json = json_decode($input, true);
 	
-	$subscription_id = $json['subscription_id'];
-	$server_id = $json['server_id'];
+	if(isset($json['subscription_id']) && isset($json['server_id'])){
+		$subscription_id = $json['subscription_id'];
+		$server_id = $json['server_id'];
+	} else {
+		http_response_code(400);
+		exit();				
+	}
 	
 	if(!isServerValidated($conn, $server_id, $server_secret)){
 		$data["unauthorized"] = "true";
 		http_response_code(401);
 		echo json_encode($data);
-		exit;
+		exit();
 	}
 	
 	// Delete subscription
@@ -114,5 +126,5 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
 	$stmt->prepare($sql);
 	$stmt->bind_param("si", $now, $subscription_id);
 	$stmt->execute();
-	exit;
+	exit();
 }
