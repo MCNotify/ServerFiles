@@ -1,13 +1,13 @@
 <?php
 
 
-function isServerValidated($conn, $server_id, $server_secret_key){
+function isServerValidated($conn, $server_id, $server_secret_key){	
 	// Check that the server secret key matches the server id's secret key
 	$sql = "SELECT server_id FROM Servers WHERE server_id = ? AND server_secret_key = ?";
 	$stmt = $conn->stmt_init();
 	$stmt->prepare($sql);
 	$stmt->bind_param("is", $server_id, $server_secret_key);
-	
+
 	$stmt->execute();
 	
 	$result = $stmt->get_result();
@@ -20,12 +20,12 @@ function isServerValidated($conn, $server_id, $server_secret_key){
 	}
 }
 
-function getUserId($conn, $uuid, $server_id){	
+function getUserId($conn, $uuid){	
 	// Check that the server secret key matches the server id's secret key
-	$sql = "SELECT user_id FROM Users WHERE uuid = ? AND server_id = ?";
+	$sql = "SELECT user_id FROM Users WHERE uuid = ?";
 	$stmt = $conn->stmt_init();
 	$stmt->prepare($sql);
-	$stmt->bind_param("si", $uuid, $server_id);
+	$stmt->bind_param("s", $uuid);
 	
 	$stmt->execute();
 	
